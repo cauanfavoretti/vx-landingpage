@@ -1,0 +1,630 @@
+// VX Consultoria — Components
+
+const { useState, useEffect, useRef } = React;
+
+/* ===== SMOKE CANVAS — cinematic ember diffusion ===== */
+function SmokeCanvas() {
+  const canvasRef = useRef(null);
+  const sparkRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const sparkCanvas = sparkRef.current;
+    if (!canvas || !sparkCanvas) return;
+    const ctx = canvas.getContext('2d');
+    const sctx = sparkCanvas.getContext('2d');
+    let w, h, raf, dpr;
+    const smoke = [];
+    const sparks = [];
+
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas.width = sparkCanvas.width = window.innerWidth * dpr;
+      h = canvas.height = sparkCanvas.height = window.innerHeight * dpr;
+      [canvas, sparkCanvas].forEach((c) => {
+        c.style.width = window.innerWidth + 'px';
+        c.style.height = window.innerHeight + 'px';
+      });
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // soft, large diffusion blobs (smoke body)
+    const spawnSmoke = () => {
+      if (smoke.length > 12) return;
+      const px = Math.random();
+      smoke.push({
+        x: px * 0.15 * w,
+        y: h * (0.75 + Math.random() * 0.28),
+        vx: 0.10 + Math.random() * 0.22,
+        vy: -0.16 - Math.random() * 0.28,
+        r: (90 + Math.random() * 130) * dpr,
+        life: 0,
+        maxLife: 360 + Math.random() * 240,
+        hue: [10, 18, 28, 36][Math.floor(Math.random() * 4)],
+        sat: 82 + Math.random() * 8,
+        light: 42 + Math.random() * 8,
+        alpha: 0.006 + Math.random() * 0.006,
+        drift: Math.random() * Math.PI * 2
+      });
+    };
+
+    // tiny floating embers (light bloom highlights)
+    const spawnSpark = () => {
+      if (sparks.length > 14) return;
+      sparks.push({
+        x: Math.random() * w * 0.22,
+        y: h * (0.85 + Math.random() * 0.15),
+        vx: 0.08 + Math.random() * 0.25,
+        vy: -0.4 - Math.random() * 0.7,
+        r: (1.2 + Math.random() * 2.2) * dpr,
+        life: 0,
+        maxLife: 180 + Math.random() * 160,
+        hue: 28 + Math.random() * 14,
+        alpha: 0.5 + Math.random() * 0.4,
+        wobble: Math.random() * Math.PI * 2
+      });
+    };
+
+    let frame = 0;
+    const tick = () => {
+      // smoke layer — gentle fade trail for soft diffusion
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = 'rgba(6, 6, 6, 0.06)';
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.globalCompositeOperation = 'lighter';
+      if (frame % 10 === 0) spawnSmoke();
+      for (let i = smoke.length - 1; i >= 0; i--) {
+        const p = smoke[i];
+        p.life++;
+        p.drift += 0.008;
+        p.x += p.vx + Math.sin(p.drift) * 0.25;
+        p.y += p.vy + Math.cos(p.drift * 0.7) * 0.12;
+        p.r += 0.55;
+        const t = p.life / p.maxLife;
+        // smooth ease in/out for soft entry & exit
+        const env = Math.sin(t * Math.PI);
+        const a = p.alpha * env;
+        const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+        grd.addColorStop(0, `hsla(${p.hue}, ${p.sat}%, ${p.light + 6}%, ${a})`);
+        grd.addColorStop(0.35, `hsla(${p.hue - 4}, ${p.sat}%, ${p.light}%, ${a * 0.55})`);
+        grd.addColorStop(0.7, `hsla(${p.hue - 8}, ${p.sat}%, ${p.light - 8}%, ${a * 0.18})`);
+        grd.addColorStop(1, `hsla(${p.hue - 10}, 80%, 40%, 0)`);
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        if (p.life > p.maxLife) smoke.splice(i, 1);
+      }
+
+      // spark layer (separate canvas for crisp bloom)
+      sctx.clearRect(0, 0, w, h);
+      sctx.globalCompositeOperation = 'lighter';
+      if (frame % 14 === 0) spawnSpark();
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+        s.life++;
+        s.wobble += 0.05;
+        s.x += s.vx + Math.sin(s.wobble) * 0.4;
+        s.y += s.vy;
+        s.vy += 0.002; // slight float
+        const t = s.life / s.maxLife;
+        const env = Math.sin(t * Math.PI);
+        const a = s.alpha * env;
+        // glow halo
+        const halo = sctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 8);
+        halo.addColorStop(0, `hsla(${s.hue}, 100%, 70%, ${a * 0.45})`);
+        halo.addColorStop(0.4, `hsla(${s.hue}, 100%, 55%, ${a * 0.15})`);
+        halo.addColorStop(1, `hsla(${s.hue}, 100%, 50%, 0)`);
+        sctx.fillStyle = halo;
+        sctx.beginPath();
+        sctx.arc(s.x, s.y, s.r * 8, 0, Math.PI * 2);
+        sctx.fill();
+        // hot core
+        sctx.fillStyle = `hsla(${s.hue + 10}, 100%, 88%, ${a})`;
+        sctx.beginPath();
+        sctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        sctx.fill();
+        if (s.life > s.maxLife) sparks.splice(i, 1);
+      }
+
+      frame++;
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+    return () => {cancelAnimationFrame(raf);window.removeEventListener('resize', resize);};
+  }, []);
+  return (
+    <>
+      <canvas id="smoke" ref={canvasRef}></canvas>
+      <canvas id="sparks" ref={sparkRef}></canvas>
+    </>);
+
+}
+
+/* ===== NAV ===== */
+function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  return (
+    <nav className={`nav ${scrolled ? 'scrolled' : ''}`}>
+      <div className="wrap nav-inner">
+        <div className="logo">
+          <img src="uploads/logo-vazada.png" alt="VX Consultoria" />
+        </div>
+        <div className="nav-links">
+          <a href="#problema">Diagnóstico</a>
+          <a href="#metodo">Método</a>
+          <a href="#servicos">Serviços</a>
+          <a href="#contato">Contato</a>
+          <a href="#contato" className="btn btn-primary" style={{ padding: '10px 18px', fontSize: 13 }}>
+            Agendar diagnóstico
+          </a>
+        </div>
+      </div>
+    </nav>);
+
+}
+
+/* ===== HERO ===== */
+function Hero() {
+  return (
+    <section className="hero" style={{ height: "1200.02px" }}>
+      <div className="wrap">
+        <div className="hero-stage">
+          <div className="hero-left">
+            <div className="hero-logo">
+              <img src="uploads/logo-vazada.png" alt="VX Consultoria" />
+            </div>
+            <span className="hero-pill">
+              <span className="spark">◆</span> Consultoria Comercial · B2B & B2C
+            </span>
+            <h1 style={{ width: "750.312px" }}>
+              Transforme sua operação comercial em uma <span className="accent">máquina de vendas</span>.
+            </h1>
+            <p className="lead">
+              Diagnóstico, método e execução para times comerciais que querem
+              previsibilidade, controle e crescimento real — sem achismo, sem improviso.
+            </p>
+            <div className="hero-cta">
+              <a href="#contato" className="btn btn-primary btn-lg">
+                Agendar diagnóstico
+                <span className="arrow">→</span>
+              </a>
+              <a href="#metodo" className="btn btn-ghost btn-lg">Conhecer o método</a>
+            </div>
+            <div className="hero-meta-left">
+              <div className="item">
+                <span className="num">+250</span>
+                <span className="lbl">Clientes</span>
+              </div>
+              <div className="item">
+                <span className="num">3.4x</span>
+                <span className="lbl">Faturamento médio</span>
+              </div>
+              <div className="item">
+                <span className="num">98%</span>
+                <span className="lbl">Recomendação</span>
+              </div>
+            </div>
+          </div>
+          <div className="hero-portrait-big">
+            <img src="uploads/fabio1.png" alt="Consultor VX" />
+          </div>
+        </div>
+      </div>
+    </section>);
+
+}
+
+/* ===== PROOF ===== */
+function Proof() {
+  const stats = [
+  { n: '+250', l: 'Empresas atendidas' },
+  { n: '+R$48mi', l: 'Gerados em vendas' },
+  { n: '+1.800', l: 'Vendedores treinados' },
+  { n: '4.9/5', l: 'Nota média NPS' }];
+
+  const prints = [
+  { src: 'uploads/proof1.jpeg', tag: 'Meta batida', cap: '"Mês passado batemos a meta"' },
+  { src: 'uploads/proof2.jpeg', tag: '+R$104k', cap: '"104k até ontem · metade do mês"' },
+  { src: 'uploads/proof3.jpeg', tag: 'R$100.520', cap: '"Saí da prefeitura · 100% consultório"' },
+  { src: 'uploads/proof4.jpeg', tag: 'Feedback', cap: '"Tu é demais, obrigada pelos resultados"' }];
+
+  return (
+    <section className="proof">
+      <div className="wrap">
+        <div className="proof-stats">
+          {stats.map((s, i) =>
+          <div className="stat" key={i}>
+              <div className="num">{s.n}</div>
+              <div className="lbl">{s.l}</div>
+            </div>
+          )}
+        </div>
+        <div className="proof-prints">
+          <div className="proof-prints-head">
+            <h3>Resultados reais, conversas reais.</h3>
+            <span className="meta">// PROVA SOCIAL · 2024–2025</span>
+          </div>
+          <div className="prints-row">
+            {prints.map((p, i) =>
+            <div className="print-card" key={i}>
+                <span className="tag">{p.tag}</span>
+                <img src={p.src} alt="" />
+                <div className="caption">{p.cap}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>);
+
+}
+
+/* ===== PROBLEM ===== */
+function Problem() {
+  const items = [
+  { h: 'Time vendendo no improviso', p: 'Sem script, sem método, cada vendedor faz do seu jeito — e o resultado é inconsistente.' },
+  { h: 'Pipeline furado', p: 'Leads entram, mas ninguém sabe onde param. Oportunidades morrem por falta de follow-up.' },
+  { h: 'Faturamento em montanha-russa', p: 'Mês bom, mês ruim. Sem previsibilidade você não consegue investir nem planejar.' },
+  { h: 'Gestor virou apagador de incêndio', p: 'O dia inteiro resolvendo problema de venda em vez de liderar e treinar o time.' }];
+
+  return (
+    <section className="problem" id="problema">
+      <div className="wrap problem-grid">
+        <div>
+          <span className="eyebrow">O Diagnóstico</span>
+          <h2 className="problem-quote" style={{ marginTop: 32 }}>
+            Você não tem um problema de <span className="strike">vendas</span>.<br />
+            Você tem um problema de <span style={{ color: 'var(--orange)' }}>gestão comercial</span>.
+          </h2>
+          <p style={{ marginTop: 28, color: 'var(--text-dim)', fontSize: 17, lineHeight: 1.6, maxWidth: 460 }}>
+            Vender mais não é trabalhar mais. É instalar processo, método e leitura de dados
+            no time que você já tem.
+          </p>
+        </div>
+        <div className="problem-list">
+          {items.map((it, i) =>
+          <div className="row" key={i}>
+              <span className="x">×</span>
+              <div>
+                <h4>{it.h}</h4>
+                <p>{it.p}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>);
+
+}
+
+/* ===== SOLUTION ===== */
+function Solution() {
+  const points = [
+  { n: '01', h: 'Diagnóstico 360° da operação', p: 'Mapeamos funil, processos, KPIs e gargalos do seu time em até 7 dias.' },
+  { n: '02', h: 'Playbook comercial sob medida', p: 'Scripts, cadências e processos desenhados para o seu produto e ticket.' },
+  { n: '03', h: 'Time treinado e cobrado por métrica', p: 'Implementamos rituais de gestão e treino que sustentam o resultado.' }];
+
+  return (
+    <section className="solution">
+      <div className="wrap solution-grid">
+        <div className="solution-img">
+          <div className="frame">
+            <img src="uploads/fabio1.png" alt="Consultor VX" />
+          </div>
+          <div className="badge-stack">
+            <div className="small-badge"><span className="icon-orange">↑</span> Conversão +3.4x</div>
+            <div className="small-badge"><span className="icon-orange">✓</span> Pipeline limpo</div>
+            <div className="small-badge"><span className="icon-orange">$</span> CAC -42%</div>
+          </div>
+        </div>
+        <div>
+          <span className="eyebrow">A Solução</span>
+          <h2 style={{ fontSize: 'clamp(32px,4vw,52px)', marginTop: 20, marginBottom: 18 }}>
+            Consultoria que entra na operação. <span style={{ color: 'var(--orange)' }}>De verdade.</span>
+          </h2>
+          <p style={{ color: 'var(--text-dim)', fontSize: 17, lineHeight: 1.6 }}>
+            A VX não entrega slides bonitos. A gente coloca a mão na massa com o seu time,
+            instala o método e fica até o resultado aparecer no extrato.
+          </p>
+          <div className="solution-points">
+            {points.map((pt, i) =>
+            <div className="solution-point" key={i}>
+                <div className="nm">{pt.n}</div>
+                <div>
+                  <h4>{pt.h}</h4>
+                  <p>{pt.p}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>);
+
+}
+
+/* ===== METHOD ===== */
+function Method() {
+  const steps = [
+  { n: '01', h: 'Diagnóstico', p: 'Imersão na sua operação para entender funil, time, dados e gargalos.' },
+  { n: '02', h: 'Estratégia', p: 'Plano de ação com metas, processos e playbook desenhado para seu negócio.' },
+  { n: '03', h: 'Implementação', p: 'Treinamento, rituais e implantação do método junto com o seu time.' },
+  { n: '04', h: 'Performance', p: 'Acompanhamento, ajustes e melhoria contínua até bater a meta.' }];
+
+  return (
+    <section className="method" id="metodo">
+      <div className="wrap">
+        <div className="section-head center">
+          <span className="eyebrow center">Método VX</span>
+          <h2>4 etapas. Resultado mensurável.</h2>
+          <p>Um processo testado em mais de 250 empresas — adaptado à sua realidade.</p>
+        </div>
+        <div className="method-steps">
+          {steps.map((s, i) =>
+          <div className="method-step" key={i}>
+              <div className="circle">{s.n}</div>
+              <h4>{s.h}</h4>
+              <p>{s.p}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>);
+
+}
+
+/* ===== SERVICES ===== */
+function Services() {
+  const list = [
+  { n: '/01', h: 'Mentoria Individual', p: 'Acompanhamento 1:1 para gestores e fundadores que querem destravar a operação comercial.', b: 'Para gestores e founders' },
+  { n: '/02', h: 'Consultoria Comercial', p: 'Implementação completa de processos, métricas, playbook e gestão do time de vendas.', b: 'Para empresas em crescimento', featured: true, tag: 'Mais procurado' },
+  { n: '/03', h: 'Treinamento In Company', p: 'Formação intensiva do seu time em prospecção, qualificação, negociação e fechamento.', b: 'Para times de vendas' }];
+
+  return (
+    <section className="services" id="servicos">
+      <div className="wrap">
+        <div className="section-head">
+          <span className="eyebrow">Serviços</span>
+          <h2>Três frentes. Um único objetivo: vender mais.</h2>
+          <p>Escolha o formato que se encaixa no momento da sua empresa — ou combine os três.</p>
+        </div>
+        <div className="services-grid">
+          {list.map((s, i) =>
+          <div className={`svc-card ${s.featured ? 'featured' : ''}`} key={i}>
+              {s.tag && <span className="svc-tag">{s.tag}</span>}
+              <span className="svc-num">{s.n}</span>
+              <h3>{s.h}</h3>
+              <p>{s.p}</p>
+              <div className="svc-benefit">
+                <span className="pulse"></span>
+                {s.b}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>);
+
+}
+
+/* ===== BENEFITS ===== */
+function Benefits() {
+  const items = [
+  { h: 'Previsibilidade de receita', p: 'Forecast confiável e pipeline saudável mês a mês.' },
+  { h: 'Time engajado e cobrado', p: 'Rituais de gestão que mantêm o time em ritmo de meta.' },
+  { h: 'Processo replicável', p: 'Playbook documentado para escalar sem depender de ninguém.' },
+  { h: 'Decisões baseadas em dado', p: 'KPIs claros e dashboards que mostram onde agir.' },
+  { h: 'CAC menor, LTV maior', p: 'Vender melhor para quem já está dentro do funil.' },
+  { h: 'Cultura de alta performance', p: 'Time que se cobra, se ajuda e bate meta com método.' }];
+
+  return (
+    <section className="benefits">
+      <div className="wrap benefits-grid">
+        <div>
+          <span className="eyebrow">Benefícios</span>
+          <h2 style={{ fontSize: 'clamp(32px,3.6vw,46px)', marginTop: 20, marginBottom: 18 }}>
+            O que muda na sua empresa em <span style={{ color: 'var(--orange)' }}>90 dias</span>.
+          </h2>
+          <p style={{ color: 'var(--text-dim)', fontSize: 17, lineHeight: 1.6 }}>
+            Resultados que a maioria dos clientes percebe já no primeiro trimestre de método VX.
+          </p>
+        </div>
+        <div className="benefits-list">
+          {items.map((it, i) =>
+          <div className="benefit-item" key={i}>
+              <span className="check">✓</span>
+              <div className="copy">
+                <h4>{it.h}</h4>
+                <p>{it.p}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>);
+
+}
+
+/* ===== TECH ===== */
+function Tech() {
+  const items = [
+  { h: 'CRM & Automação', p: 'Implantação e otimização de Pipedrive, RD, HubSpot e similares.' },
+  { h: 'IA Aplicada a Vendas', p: 'Qualificação de leads, scoring e respostas automatizadas com IA.' },
+  { h: 'Dashboards & BI', p: 'Painéis de performance comercial em tempo real para gestão.' },
+  { h: 'Playbook Digital', p: 'Processos, scripts e cadências organizados em plataforma única.' }];
+
+  const Icon = ({ children }) =>
+  <span style={{ fontFamily: 'var(--display)', fontWeight: 700, fontSize: 18 }}>{children}</span>;
+
+  const icons = ['◆', '⚡', '◐', '◇'];
+  return (
+    <section className="tech">
+      <div className="wrap">
+        <div className="section-head center">
+          <span className="eyebrow center">Tecnologia</span>
+          <h2>Método humano. Stack tecnológico.</h2>
+          <p>Combinamos consultoria de gente com as melhores ferramentas do mercado para garantir escala.</p>
+        </div>
+        <div className="tech-grid">
+          {items.map((it, i) =>
+          <div className="tech-card" key={i}>
+              <div className="icn"><Icon>{icons[i]}</Icon></div>
+              <h4>{it.h}</h4>
+              <p>{it.p}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>);
+
+}
+
+/* ===== FORM ===== */
+function FormSection() {
+  const [submitted, setSubmitted] = useState(false);
+  const [data, setData] = useState({ nome: '', email: '', whatsapp: '', empresa: '', faturamento: '' });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+  };
+
+  return (
+    <section className="form-section" id="contato">
+      <div className="wrap form-wrap">
+        <div className="form-side">
+          <span className="eyebrow">Diagnóstico Gratuito</span>
+          <h2 style={{ marginTop: 20 }}>Vamos conversar sobre seus números.</h2>
+          <p>Em 30 minutos, mostramos exatamente onde está travando seu faturamento — e o que fazer nos próximos 90 dias.</p>
+          <ul>
+            <li>Análise gratuita do seu funil comercial</li>
+            <li>Plano de ação personalizado</li>
+            <li>Sem compromisso, sem enrolação</li>
+          </ul>
+        </div>
+        <div className="form-card">
+          {!submitted ?
+          <>
+              <h3>Agende seu diagnóstico</h3>
+              <p className="sub">Resposta em até 24 horas úteis.</p>
+              <form onSubmit={handleSubmit}>
+                <div className="field">
+                  <label>Nome completo</label>
+                  <input type="text" required value={data.nome} onChange={(e) => setData({ ...data, nome: e.target.value })} placeholder="Seu nome" />
+                </div>
+                <div className="field-row">
+                  <div className="field">
+                    <label>E-mail</label>
+                    <input type="email" required value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} placeholder="voce@empresa.com" />
+                  </div>
+                  <div className="field">
+                    <label>WhatsApp</label>
+                    <input type="tel" required value={data.whatsapp} onChange={(e) => setData({ ...data, whatsapp: e.target.value })} placeholder="(11) 99999-9999" />
+                  </div>
+                </div>
+                <div className="field">
+                  <label>Empresa</label>
+                  <input type="text" value={data.empresa} onChange={(e) => setData({ ...data, empresa: e.target.value })} placeholder="Nome da sua empresa" />
+                </div>
+                <div className="field">
+                  <label>Faturamento mensal aproximado</label>
+                  <select value={data.faturamento} onChange={(e) => setData({ ...data, faturamento: e.target.value })}>
+                    <option value="">Selecione uma faixa</option>
+                    <option value="50">Até R$ 50 mil</option>
+                    <option value="100">R$ 50k – R$ 100k</option>
+                    <option value="500">R$ 100k – R$ 500k</option>
+                    <option value="1000">R$ 500k – R$ 1mi</option>
+                    <option value="1000+">Acima de R$ 1mi</option>
+                  </select>
+                </div>
+                <button type="submit" className="btn btn-primary btn-lg">
+                  Quero meu diagnóstico gratuito
+                  <span className="arrow">→</span>
+                </button>
+                <p className="form-disclaimer">Seus dados estão seguros · LGPD compliant</p>
+              </form>
+            </> :
+
+          <div className="success-state">
+              <div className="ok-circle">✓</div>
+              <h3>Recebemos sua solicitação.</h3>
+              <p style={{ color: 'var(--text-dim)', marginTop: 12 }}>
+                Em até 24h um especialista da VX vai te chamar no WhatsApp para agendar seu diagnóstico.
+              </p>
+            </div>
+          }
+        </div>
+      </div>
+    </section>);
+
+}
+
+/* ===== FINAL CTA ===== */
+function FinalCTA() {
+  return (
+    <section className="final-cta">
+      <div className="wrap">
+        <span className="eyebrow center">Última Chamada</span>
+        <h2>
+          Sua próxima meta não vai bater <span style={{ color: 'var(--orange)' }}>sozinha</span>.
+        </h2>
+        <p>Pare de tentar resolver vendas com mais esforço. Resolva com método.</p>
+        <a href="#contato" className="btn btn-primary">
+          Agendar diagnóstico gratuito
+          <span className="arrow">→</span>
+        </a>
+      </div>
+    </section>);
+
+}
+
+/* ===== FOOTER ===== */
+function Footer() {
+  return (
+    <footer className="foot">
+      <div className="wrap foot-grid">
+        <div className="logo">
+          <img src="uploads/logo-vazada.png" alt="VX" style={{ height: 24 }} />
+        </div>
+        <p>© 2026 VX Consultoria · Multiplique suas vendas</p>
+        <div className="links">
+          <a href="#">Privacidade</a>
+          <a href="#">Termos</a>
+          <a href="#contato">Contato</a>
+        </div>
+      </div>
+    </footer>);
+
+}
+
+/* ===== APP ===== */
+function App() {
+  return (
+    <>
+      <SmokeCanvas />
+      <div className="app">
+        <Nav />
+        <Hero />
+        <Proof />
+        <Problem />
+        <Solution />
+        <Method />
+        <Services />
+        <Benefits />
+        <Tech />
+        <FormSection />
+        <FinalCTA />
+        <Footer />
+      </div>
+    </>);
+
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
