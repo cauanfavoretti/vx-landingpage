@@ -433,6 +433,7 @@ function Proof() {
                 key={i}
                 onMouseEnter={() => setHoveredPrint(p)}
                 onMouseLeave={() => setHoveredPrint(null)}
+                onClick={() => setHoveredPrint(p)}
               >
                 <span className="tag">{p.tag}</span>
                 <img src={p.src} alt="" loading="lazy" decoding="async" />
@@ -441,7 +442,11 @@ function Proof() {
             ))}
           </div>
           {hoveredPrint && (
-            <div className="print-expand" onMouseLeave={() => setHoveredPrint(null)}>
+            <div
+              className="print-expand"
+              onMouseLeave={() => setHoveredPrint(null)}
+              onClick={() => setHoveredPrint(null)}
+            >
               <img src={hoveredPrint.src} alt="" />
             </div>
           )}
@@ -457,21 +462,37 @@ function InstagramVideos() {
     'https://www.instagram.com/p/DOZu3NXDvze/',
   ];
   const wrapRefs = useRef([]);
+  const sectionRef = useRef(null);
+  const scriptLoadedRef = useRef(false);
+
+  const loadEmbedScript = useCallback(() => {
+    if (scriptLoadedRef.current) return;
+    scriptLoadedRef.current = true;
+    if (window.instgrm) {
+      window.instgrm.Embeds.process();
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://www.instagram.com/embed.js';
+    s.async = true;
+    s.onload = () => window.instgrm && window.instgrm.Embeds.process();
+    document.body.appendChild(s);
+  }, []);
 
   useEffect(() => {
-    const load = () => {
-      if (window.instgrm) {
-        window.instgrm.Embeds.process();
-        return;
-      }
-      const s = document.createElement('script');
-      s.src = 'https://www.instagram.com/embed.js';
-      s.async = true;
-      s.onload = () => window.instgrm && window.instgrm.Embeds.process();
-      document.body.appendChild(s);
-    };
-    load();
-  }, []);
+    const el = sectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          loadEmbedScript();
+          io.disconnect();
+        }
+      });
+    }, { rootMargin: '200px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [loadEmbedScript]);
 
   useEffect(() => {
     const io = new IntersectionObserver((entries) => {
@@ -487,7 +508,7 @@ function InstagramVideos() {
   }, []);
 
   return (
-    <section className="ig-section">
+    <section className="ig-section" ref={sectionRef}>
       <div className="wrap">
         <div className="section-head center">
           <span className="eyebrow center">Na Prática</span>
@@ -742,7 +763,7 @@ function Method() {
             }}>
               <div className="wheel-num">{s.n}</div>
               <h4>{s.h}</h4>
-              <p style={i === 0 ? {fontSize: 11} : {}}>{s.p}</p>
+              <p>{s.p}</p>
             </div>
           ))}
         </div>
@@ -1037,6 +1058,21 @@ function FinalCTA() {
 
 /* ===== LOCATION ===== */
 function Location() {
+  const videoRef = useRef(null);
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        el.src = 'uploads/WhatsApp Video 2026-04-30 at 17.59.32.mp4';
+        el.load();
+        el.play().catch(() => {});
+        io.disconnect();
+      }
+    }, { threshold: 0.2, rootMargin: '200px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   return (
     <section className="location">
       <div className="wrap location-wrap">
@@ -1064,8 +1100,8 @@ function Location() {
         </div>
         <div className="location-map">
           <video
-            src="uploads/WhatsApp Video 2026-04-30 at 17.59.32.mp4"
-            autoPlay
+            ref={videoRef}
+            preload="none"
             muted
             loop
             playsInline
