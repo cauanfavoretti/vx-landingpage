@@ -1474,8 +1474,27 @@ section[id] { scroll-margin-top: 88px; }
   .proof-stats .num { font-size: 38px; }
   .hero { padding: 96px 0 40px; }
   .hero-left { padding-bottom: 32px; }
-  .hero-portrait-big { height: 320px; }
+  .hero-portrait-big { display: none; }
   .hero-meta-left { gap: 24px; padding-top: 24px; }
+  .solution-points {
+    display: flex;
+    grid-template-columns: none;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+    margin-top: 32px;
+    scrollbar-width: none;
+  }
+  .solution-points::-webkit-scrollbar { display: none; }
+  .solution-point {
+    flex: 0 0 82%;
+    scroll-snap-align: start;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg-2);
+  }
   .print-card { max-height: 220px; }
   .print-card .caption { font-size: 12px; bottom: 6px; left: 6px; right: 6px; }
   .print-card .tag { font-size: 11px; top: 6px; left: 6px; padding: 3px 8px; }
