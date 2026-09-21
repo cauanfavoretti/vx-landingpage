@@ -10,6 +10,8 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     gsap.registerPlugin(ScrollTrigger);
+    // Sinaliza ao watchdog do layout que as animações estão de pé.
+    document.documentElement.classList.add("anim-ready");
 
     const lenis = new Lenis({
       duration: 1.15,

@@ -146,10 +146,13 @@ html.lenis, html.lenis body { height: auto; }
   background-size: 64px 64px;
 }
 
-.reveal { opacity: 0; transform: translateY(28px); }
+/* Aprimoramento progressivo: o conteúdo nasce visível. Só escondemos quando
+   o JS confirma que vai animar (html.js-anim), para que uma falha de script
+   nunca deixe a página em branco. */
+.reveal { opacity: 1; transform: none; }
+html.js-anim .reveal { opacity: 0; transform: translateY(28px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1 !important; transform: none !important; }
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;

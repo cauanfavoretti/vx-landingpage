@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, Sparkles, MousePointerClick } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SafeBoundary } from "@/components/visuals/safe-boundary";
 
 const HeroField = dynamic(() => import("@/components/visuals/hero-field"), {
   ssr: false,
@@ -23,6 +24,9 @@ export function Hero() {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const SELECTORS =
+      ".hero-pill, .hero-line, .hero-lead, .hero-cta > *, .hero-metric, .hero-portrait";
+
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
       tl.fromTo(
@@ -61,7 +65,24 @@ export function Hero() {
           "-=1.3",
         );
     }, root);
-    return () => ctx.revert();
+
+    // Rede de segurança: se algo quebrar no meio da timeline, o conteúdo do
+    // hero não pode ficar preso em opacity: 0.
+    const watchdog = window.setTimeout(() => {
+      const el = root.current;
+      if (!el) return;
+      el.querySelectorAll<HTMLElement>(SELECTORS).forEach((n) => {
+        if (n.style.opacity && Number(n.style.opacity) < 1) {
+          n.style.opacity = "";
+          n.style.transform = "";
+        }
+      });
+    }, 6000);
+
+    return () => {
+      window.clearTimeout(watchdog);
+      ctx.revert();
+    };
   }, []);
 
   const reduced = useReducedMotion();
@@ -75,7 +96,11 @@ export function Hero() {
       {/* Camadas de fundo */}
       <div className="grid-lines pointer-events-none absolute inset-0 opacity-[0.55] [mask-image:radial-gradient(70%_60%_at_50%_35%,#000,transparent)]" />
       <div className="pointer-events-none absolute inset-0 opacity-45 [mask-image:radial-gradient(80%_75%_at_62%_45%,#000_35%,transparent_78%)] lg:opacity-80">
-        {!reduced && <HeroField />}
+        {!reduced && (
+          <SafeBoundary>
+            <HeroField />
+          </SafeBoundary>
+        )}
       </div>
       <div className="pointer-events-none absolute -top-24 -left-32 size-[560px] rounded-full bg-orange-vx-600/22 blur-[130px]" />
       <div className="pointer-events-none absolute right-[-8%] bottom-[-14%] size-[520px] rounded-full bg-orange-vx-500/14 blur-[140px]" />
