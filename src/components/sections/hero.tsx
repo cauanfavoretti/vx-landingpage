@@ -13,6 +13,10 @@ const HeroField = dynamic(() => import("@/components/visuals/hero-field"), {
   ssr: false,
 });
 
+/** A base do retrato desaparecendo no fundo, em vez de terminar em linha reta. */
+const FUNDIR_NA_BASE =
+  "linear-gradient(to bottom, #000 0%, #000 86%, rgba(0,0,0,0.55) 94%, transparent 100%)";
+
 const METRICS = [
   { num: "+250", lbl: "Clientes" },
   { num: "3.4x", lbl: "Faturamento médio" },
@@ -186,6 +190,20 @@ export function Hero() {
                 priority
                 sizes="(max-width: 1024px) 92vw, 640px"
                 className="relative z-10 block h-auto w-full object-contain object-bottom drop-shadow-[0_40px_70px_rgba(0,0,0,0.6)]"
+                /* O recorte da foto termina numa linha reta, e essa linha
+                   aparecia sobre o fundo escuro. A máscara dissolve a base nos
+                   últimos 14% da altura — só o tricô, bem abaixo das mãos — e o
+                   retrato passa a nascer do fundo em vez de ser colado nele. */
+                style={{
+                  maskImage: FUNDIR_NA_BASE,
+                  WebkitMaskImage: FUNDIR_NA_BASE,
+                  // Sem isto a máscara se repete para fora da caixa e a sombra
+                  // projetada reaparece embaixo como uma faixa fantasma.
+                  maskRepeat: "no-repeat",
+                  WebkitMaskRepeat: "no-repeat",
+                  maskSize: "100% 100%",
+                  WebkitMaskSize: "100% 100%",
+                }}
               />
             </div>
           </div>
