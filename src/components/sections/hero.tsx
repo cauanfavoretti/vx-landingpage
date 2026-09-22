@@ -91,7 +91,7 @@ export function Hero() {
     <section
       ref={root}
       id="top"
-      className="relative flex min-h-[100svh] items-center overflow-hidden pt-28 pb-16 lg:pt-24"
+      className="relative flex min-h-[100svh] items-center overflow-hidden pt-28 pb-16 lg:pt-24 lg:pb-24"
     >
       {/* Camadas de fundo */}
       <div className="grid-lines pointer-events-none absolute inset-0 opacity-[0.55] [mask-image:radial-gradient(70%_60%_at_50%_35%,#000,transparent)]" />
@@ -172,13 +172,11 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="hero-portrait relative mx-auto w-full max-w-[520px]">
-            <motion.div
-              className="relative"
-              animate={reduced ? undefined : { y: [0, -12, 0] }}
-              transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <div className="absolute inset-x-6 bottom-4 h-[62%] rounded-[40%] bg-orange-vx-500/25 blur-[90px]" />
+          {/* Retrato ancorado na base do hero: a margem negativa anula o padding
+              inferior da seção, de modo que os pés da foto encostem na borda. */}
+          <div className="hero-portrait relative mx-auto -mb-16 w-full max-w-[560px] self-end lg:-mb-24 lg:max-w-[640px]">
+            <div className="relative">
+              <div className="absolute inset-x-6 bottom-0 h-[62%] rounded-[40%] bg-orange-vx-500/25 blur-[90px]" />
               <div className="absolute right-4 bottom-10 size-40 rounded-full bg-orange-vx-500/25 blur-[70px]" />
               <Image
                 src="/uploads/fabio1.png"
@@ -186,10 +184,10 @@ export function Hero() {
                 width={900}
                 height={1100}
                 priority
-                sizes="(max-width: 1024px) 90vw, 520px"
-                className="relative z-10 h-auto w-full object-contain drop-shadow-[0_40px_70px_rgba(0,0,0,0.6)]"
+                sizes="(max-width: 1024px) 92vw, 640px"
+                className="relative z-10 block h-auto w-full object-contain object-bottom drop-shadow-[0_40px_70px_rgba(0,0,0,0.6)]"
               />
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
