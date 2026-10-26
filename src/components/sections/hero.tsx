@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowRight, Sparkles, MousePointerClick } from "lucide-react";
+import { ArrowRight, MousePointerClick } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const METRICS = [
@@ -19,20 +19,14 @@ export function Hero() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const SELECTORS =
-      ".hero-pill, .hero-line, .hero-lead, .hero-cta > *, .hero-metric, .hero-portrait";
+      ".hero-line, .hero-lead, .hero-cta > *, .hero-metric, .hero-portrait";
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
       tl.fromTo(
-        ".hero-pill",
-        { y: 22, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.7 },
-      )
-        .fromTo(
           ".hero-line",
           { yPercent: 118, opacity: 0 },
           { yPercent: 0, opacity: 1, duration: 1, stagger: 0.1 },
-          "-=0.35",
         )
         .fromTo(
           ".hero-lead",
@@ -104,21 +98,7 @@ export function Hero() {
       <div className="wrap relative z-10">
         <div className="relative max-w-[620px]">
           <div>
-            <span className="hero-pill inline-flex items-center gap-2.5 rounded-full border border-orange-vx-500/28 bg-orange-vx-500/10 py-2 pr-4 pl-3 backdrop-blur-md">
-              <span className="relative grid size-6 place-items-center rounded-full bg-orange-vx-500/18">
-                <Sparkles className="size-3.5 text-orange-vx-400" />
-                <span className="absolute inset-0 animate-pulse-ring rounded-full" />
-              </span>
-              <span className="font-mono text-[11px] tracking-[0.2em] text-orange-vx-100 uppercase">
-                Consultoria Comercial
-              </span>
-              <span className="hidden h-3.5 w-px bg-white/15 sm:block" />
-              <span className="hidden font-mono text-[11px] tracking-[0.2em] text-orange-vx-300 uppercase sm:inline">
-                B2B &amp; B2C
-              </span>
-            </span>
-
-            <h1 className="mt-7 text-[clamp(36px,5.4vw,68px)] leading-[1.03]">
+            <h1 className="text-[clamp(36px,5.4vw,68px)] leading-[1.03]">
               <span className="block overflow-hidden">
                 <span className="hero-line block">Transforme sua operação</span>
               </span>

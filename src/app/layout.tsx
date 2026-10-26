@@ -40,7 +40,13 @@ export const metadata: Metadata = {
     "Manaus",
     "VX Consultoria",
   ],
-  icons: { icon: "/uploads/icon.png" },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/uploads/icon.png", type: "image/png", sizes: "500x500" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "VX Consultoria · Multiplique suas vendas",
     description,
