@@ -76,7 +76,7 @@ src/
   (O webhook antigo `webhook.schedule10x.com` está fora do ar — respondia 525 — e foi substituído.)
 - **Booking LeadConnector** (iframe pós-envio): `widget/booking/WU0ds4ulezO5mCurDzGU`
 - **Embed do Instagram**: carregado sob demanda via IntersectionObserver, com link de fallback
-- **Google Maps**: Rua Rio Javari, 361 · Nossa Sra. das Graças · Manaus – AM
+- **Google Maps**: R. Rio Purús, 535 · Nossa Sra. das Graças · Manaus – AM · 69053-050
 
 ## Assets
 

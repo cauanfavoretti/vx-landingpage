@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useReveal } from "@/hooks/use-reveal";
 
 const MAPS_URL =
-  "https://www.google.com/maps/search/Rua+Rio+Javari,+361,+Nossa+Sra.+das+Gracas,+Manaus,+AM,+69053-110";
+  "https://www.google.com/maps/search/?api=1&query=R.+Rio+Pur%C3%BAs%2C+535+-+Nossa+Sra.+das+Gra%C3%A7as%2C+Manaus+-+AM%2C+69053-050";
 
 export function Location() {
   const ref = useReveal<HTMLElement>();
@@ -50,13 +50,13 @@ export function Location() {
             </span>
             <div>
               <p className="font-display text-[19px] text-white">
-                Rua Rio Javari, 361
+                R. Rio Purús, 535
               </p>
               <p className="mt-1.5 text-[15px] text-mist-300">
                 Nossa Sra. das Graças · Manaus – AM
               </p>
               <p className="mt-1 font-mono text-[13px] text-mist-600">
-                CEP 69053-110
+                CEP 69053-050
               </p>
             </div>
           </div>
