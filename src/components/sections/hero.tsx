@@ -1,21 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import gsap from "gsap";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, Sparkles, MousePointerClick } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SafeBoundary } from "@/components/visuals/safe-boundary";
-
-const HeroField = dynamic(() => import("@/components/visuals/hero-field"), {
-  ssr: false,
-});
-
-/** A base do retrato desaparecendo no fundo, em vez de terminar em linha reta. */
-const FUNDIR_NA_BASE =
-  "linear-gradient(to bottom, #000 0%, #000 86%, rgba(0,0,0,0.55) 94%, transparent 100%)";
 
 const METRICS = [
   { num: "+250", lbl: "Clientes" },
@@ -95,23 +85,24 @@ export function Hero() {
     <section
       ref={root}
       id="top"
-      className="relative flex min-h-[100svh] items-center overflow-hidden pt-28 pb-16 lg:pt-24 lg:pb-24"
+      className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-black pt-[440px] pb-16 sm:pt-[520px] lg:pt-32 lg:pb-24"
     >
-      {/* Camadas de fundo */}
-      <div className="grid-lines pointer-events-none absolute inset-0 opacity-[0.55] [mask-image:radial-gradient(70%_60%_at_50%_35%,#000,transparent)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-45 [mask-image:radial-gradient(80%_75%_at_62%_45%,#000_35%,transparent_78%)] lg:opacity-80">
-        {!reduced && (
-          <SafeBoundary>
-            <HeroField />
-          </SafeBoundary>
-        )}
+      {/* A foto ocupa a lateral direita e se dissolve no preto à esquerda. */}
+      <div className="hero-portrait pointer-events-none absolute top-0 right-0 h-[540px] w-full sm:h-[620px] lg:h-full lg:w-[62%]">
+        <Image
+          src="/uploads/fabio-escritorio.png"
+          alt="Fabio, da VX Consultoria, em seu escritório"
+          fill
+          preload
+          sizes="(min-width: 1024px) 62vw, 100vw"
+          className="object-cover object-[58%_20%] lg:object-[50%_25%]"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,#000_0%,rgba(0,0,0,0.65)_10%,rgba(0,0,0,0.15)_28%,transparent_46%)] lg:bg-[linear-gradient(90deg,#000_0%,rgba(0,0,0,0.9)_8%,rgba(0,0,0,0.55)_22%,rgba(0,0,0,0.12)_40%,transparent_58%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.15)_0%,transparent_50%,#000_100%)] lg:bg-[linear-gradient(180deg,rgba(0,0,0,0.2)_0%,transparent_65%,#000_100%)]" />
       </div>
-      <div className="pointer-events-none absolute -top-24 -left-32 size-[560px] rounded-full bg-orange-vx-600/22 blur-[130px]" />
-      <div className="pointer-events-none absolute right-[-8%] bottom-[-14%] size-[520px] rounded-full bg-orange-vx-500/14 blur-[140px]" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink-950 to-transparent" />
 
       <div className="wrap relative z-10">
-        <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8">
+        <div className="relative max-w-[620px]">
           <div>
             <span className="hero-pill inline-flex items-center gap-2.5 rounded-full border border-orange-vx-500/28 bg-orange-vx-500/10 py-2 pr-4 pl-3 backdrop-blur-md">
               <span className="relative grid size-6 place-items-center rounded-full bg-orange-vx-500/18">
@@ -176,37 +167,7 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Retrato ancorado na base do hero: a margem negativa anula o padding
-              inferior da seção, de modo que os pés da foto encostem na borda. */}
-          <div className="hero-portrait relative mx-auto -mb-16 w-full max-w-[560px] self-end lg:-mb-24 lg:max-w-[640px]">
-            <div className="relative">
-              <div className="absolute inset-x-6 bottom-0 h-[62%] rounded-[40%] bg-orange-vx-500/25 blur-[90px]" />
-              <div className="absolute right-4 bottom-10 size-40 rounded-full bg-orange-vx-500/25 blur-[70px]" />
-              <Image
-                src="/uploads/fabio1.png"
-                alt="Consultor VX"
-                width={900}
-                height={1100}
-                priority
-                sizes="(max-width: 1024px) 92vw, 640px"
-                className="relative z-10 block h-auto w-full object-contain object-bottom drop-shadow-[0_40px_70px_rgba(0,0,0,0.6)]"
-                /* O recorte da foto termina numa linha reta, e essa linha
-                   aparecia sobre o fundo escuro. A máscara dissolve a base nos
-                   últimos 14% da altura — só o tricô, bem abaixo das mãos — e o
-                   retrato passa a nascer do fundo em vez de ser colado nele. */
-                style={{
-                  maskImage: FUNDIR_NA_BASE,
-                  WebkitMaskImage: FUNDIR_NA_BASE,
-                  // Sem isto a máscara se repete para fora da caixa e a sombra
-                  // projetada reaparece embaixo como uma faixa fantasma.
-                  maskRepeat: "no-repeat",
-                  WebkitMaskRepeat: "no-repeat",
-                  maskSize: "100% 100%",
-                  WebkitMaskSize: "100% 100%",
-                }}
-              />
-            </div>
-          </div>
+
         </div>
       </div>
 

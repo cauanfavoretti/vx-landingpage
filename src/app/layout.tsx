@@ -66,7 +66,6 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        <link rel="preload" as="image" href="/uploads/fabio1.png" />
         <script
           dangerouslySetInnerHTML={{
             __html: `try{var d=document.documentElement;if(!matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.add('js-anim');setTimeout(function(){if(!d.classList.contains('anim-ready'))d.classList.remove('js-anim')},6000)}}catch(e){}`,
