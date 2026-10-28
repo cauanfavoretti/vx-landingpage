@@ -49,7 +49,21 @@ export async function enviarLeadMeta(req: Request, lead: Lead): Promise<void> {
         ...(process.env.META_TEST_EVENT_CODE ? { test_event_code: process.env.META_TEST_EVENT_CODE } : {}),
       }),
     });
-    if (!response.ok) console.error("[meta] envio recusado", response.status);
+    const result = await response.json().catch(() => null);
+    // Keep a receipt for diagnosis without logging contact data or credentials.
+    const receipt = {
+      eventId: lead.eventId,
+      status: response.status,
+      testMode: Boolean(process.env.META_TEST_EVENT_CODE),
+      eventsReceived: typeof result?.events_received === "number" ? result.events_received : 0,
+      errorCode: typeof result?.error?.code === "number" ? result.error.code : undefined,
+      errorSubcode: typeof result?.error?.error_subcode === "number" ? result.error.error_subcode : undefined,
+    };
+    if (!response.ok || receipt.eventsReceived !== 1) {
+      console.error("[meta] Lead não confirmado", receipt);
+    } else {
+      console.log("[meta] Lead recebido pela Meta", receipt);
+    }
   } catch {
     // Never log request/response bodies or errors that could expose credentials.
     console.error("[meta] falha de conexão ou tempo limite");
