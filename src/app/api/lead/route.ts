@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { enviarLeadMeta } from "@/lib/meta-capi";
+
+export const runtime = "nodejs";
 
 /**
  * Recebe o formulário da LP e cria/atualiza o contato no GHL.
@@ -86,6 +89,7 @@ async function createOpportunity(
 }
 
 type Payload = {
+  eventId?: unknown;
   nome?: unknown;
   email?: unknown;
   whatsapp?: unknown;
@@ -132,6 +136,11 @@ export async function POST(request: Request) {
     );
   }
 
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ ok: false, error: "Requisição inválida." }, { status: 400 });
+  }
+
+  const eventId = str(body.eventId);
   const nome = str(body.nome);
   const email = str(body.email);
   const whatsapp = str(body.whatsapp);
@@ -139,6 +148,9 @@ export async function POST(request: Request) {
   const faturamento = str(body.faturamento);
 
   const errors: string[] = [];
+  if (!/^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i.test(eventId)) {
+    errors.push("Atualize a página e envie novamente.");
+  }
   if (nome.length < 2) errors.push("Informe seu nome completo.");
   if (!isEmail(email)) errors.push("Informe um e-mail válido.");
   const phone = toE164BR(whatsapp);
@@ -217,6 +229,8 @@ export async function POST(request: Request) {
         console.log(`[lead] oportunidade criada (${opportunity})`);
       }
     }
+
+    await enviarLeadMeta(request, { nome, email, whatsapp: phone, eventId });
 
     return NextResponse.json({ ok: true, contactId, opportunity });
   } catch (err) {

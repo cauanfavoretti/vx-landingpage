@@ -1,21 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { AlertCircle, ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useReveal } from "@/hooks/use-reveal";
 
 const LEAD_ENDPOINT = "/api/lead";
-const BOOKING_URL =
-  "https://api.leadconnectorhq.com/widget/booking/WU0ds4ulezO5mCurDzGU";
 
 const FATURAMENTO = [
   "Até R$ 50 mil",
@@ -50,7 +43,7 @@ export function Contact() {
   });
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
-  const [showBooking, setShowBooking] = useState(false);
+  const sendingRef = useRef(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const set = (k: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -58,14 +51,17 @@ export function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (sendingRef.current) return;
+    sendingRef.current = true;
     setSending(true);
     setError("");
 
     try {
+      const eventId = crypto.randomUUID();
       const res = await fetch(LEAD_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, eventId }),
       });
       const json = await res.json().catch(() => ({}));
 
@@ -74,43 +70,23 @@ export function Contact() {
           json?.error ??
             "Não conseguimos registrar seus dados. Tente novamente em instantes.",
         );
-        setSending(false);
         return;
       }
-    } catch {
-      setError(
-        "Falha de conexão. Verifique sua internet e tente novamente.",
-      );
-      setSending(false);
-      return;
-    }
-
-    setSending(false);
-    setShowBooking(true);
-  };
-
-  const handleBooked = useCallback(() => {
-    setShowBooking(false);
-    setShowSuccess(true);
-  }, []);
-
-  useEffect(() => {
-    if (!showBooking) return;
-    const onMsg = (e: MessageEvent) => {
-      // Só aceita mensagens vindas do widget de agendamento.
-      if (!e.origin.endsWith(".leadconnectorhq.com")) return;
-      if (
-        typeof e.data === "string" &&
-        (e.data.includes("booking") ||
-          e.data.includes("confirmed") ||
-          e.data.includes("scheduled"))
-      ) {
-        handleBooked();
+      try {
+        (window as Window & { fbq?: (...args: unknown[]) => void }).fbq?.(
+          "track", "Lead", {}, { eventID: eventId },
+        );
+      } catch {
+        // A tracking failure must never hide a successful signup.
       }
-    };
-    window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
-  }, [showBooking, handleBooked]);
+      setShowSuccess(true);
+    } catch {
+      setError("Falha de conexão. Verifique sua internet e tente novamente.");
+    } finally {
+      sendingRef.current = false;
+      setSending(false);
+    }
+  };
 
   return (
     <>
@@ -152,7 +128,7 @@ export function Contact() {
           </div>
 
           <div className="reveal glass-card rounded-[22px] p-7 shadow-[0_40px_100px_-50px_rgba(0,0,0,0.9)] sm:p-9">
-            <h3 className="text-[24px] text-white">Agende seu diagnóstico</h3>
+            <h3 className="text-[24px] text-white">Solicite seu diagnóstico</h3>
             <p className="mt-2 text-[14.5px] text-mist-500">
               Resposta em até 24 horas úteis.
             </p>
@@ -261,18 +237,6 @@ export function Contact() {
           </div>
         </div>
       </section>
-
-      {/* Modal de agendamento */}
-      <Dialog open={showBooking} onOpenChange={(o) => !o && handleBooked()}>
-        <DialogContent className="h-[min(88vh,760px)] w-[min(96vw,860px)] overflow-hidden p-0">
-          <DialogTitle className="sr-only">Agendar diagnóstico</DialogTitle>
-          <iframe
-            src={BOOKING_URL}
-            title="Agendar diagnóstico"
-            className="size-full rounded-[22px] border-0 bg-white"
-          />
-        </DialogContent>
-      </Dialog>
 
       {/* Sucesso */}
       <AnimatePresence>
