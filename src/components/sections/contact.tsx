@@ -7,8 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { useReveal } from "@/hooks/use-reveal";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const LEAD_ENDPOINT = "/api/lead";
+const BOOKING_URL =
+  "https://api.leadconnectorhq.com/widget/booking/WU0ds4ulezO5mCurDzGU";
 
 const FATURAMENTO = [
   "Até R$ 50 mil",
@@ -45,6 +53,7 @@ export function Contact() {
   const [error, setError] = useState("");
   const sendingRef = useRef(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
 
   const set = (k: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setData((d) => ({ ...d, [k]: e.target.value }));
@@ -79,7 +88,8 @@ export function Contact() {
       } catch {
         // A tracking failure must never hide a successful signup.
       }
-      setShowSuccess(true);
+      setShowSuccess(false);
+      setShowBooking(true);
     } catch {
       setError("Falha de conexão. Verifique sua internet e tente novamente.");
     } finally {
@@ -238,6 +248,40 @@ export function Contact() {
         </div>
       </section>
 
+      <Dialog
+        open={showBooking}
+        onOpenChange={(open) => {
+          setShowBooking(open);
+          if (!open) setShowSuccess(true);
+        }}
+      >
+        <DialogContent className="flex h-[90dvh] max-h-[860px] w-[min(96vw,900px)] flex-col overflow-hidden bg-white p-0">
+          <div className="shrink-0 border-b border-slate-200 bg-white px-5 pt-5 pb-4 pr-14 text-slate-900">
+            <DialogTitle className="text-xl">Agende seu diagnóstico gratuito</DialogTitle>
+            <DialogDescription className="mt-2 text-sm text-slate-600">
+              Seus dados foram recebidos. Escolha o melhor dia e horário abaixo.
+            </DialogDescription>
+          </div>
+          <iframe
+            src={BOOKING_URL}
+            title="Agendar diagnóstico"
+            className="min-h-0 w-full flex-1 border-0 bg-white"
+            data-lenis-prevent
+          />
+          <p className="shrink-0 border-t border-slate-200 bg-white px-5 py-3 text-center text-sm text-slate-600">
+            Não conseguiu visualizar?{" "}
+            <a
+              href={BOOKING_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-orange-vx-600 underline underline-offset-4"
+            >
+              Abrir agenda em outra aba
+            </a>
+          </p>
+        </DialogContent>
+      </Dialog>
+
       {/* Sucesso */}
       <AnimatePresence>
         {showSuccess && (
@@ -266,6 +310,16 @@ export function Contact() {
               <p className="mt-3 text-[16px] text-mist-300">
                 Entraremos em contato em breve.
               </p>
+              <Button
+                className="mt-6"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSuccess(false);
+                  setShowBooking(true);
+                }}
+              >
+                Abrir agenda novamente
+              </Button>
               <p className="mt-8 font-mono text-[11px] tracking-[0.18em] text-mist-600 uppercase">
                 Toque para fechar
               </p>
