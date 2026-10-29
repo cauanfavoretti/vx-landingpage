@@ -262,7 +262,7 @@ export function Contact() {
               >
                 <Check className="size-11 text-orange-vx-400" strokeWidth={2.5} />
               </motion.span>
-              <h3 className="mt-8 text-[32px] text-white">Boas-vindas à VX</h3>
+              <h3 className="mt-8 text-[32px] text-white">Bem-vindo à VX</h3>
               <p className="mt-3 text-[16px] text-mist-300">
                 Entraremos em contato em breve.
               </p>
