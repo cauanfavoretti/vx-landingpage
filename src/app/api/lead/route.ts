@@ -23,6 +23,7 @@ const STAGE_ID =
 
 /** Origem gravada na oportunidade. */
 const OPPORTUNITY_SOURCE = "site";
+const CF_ORIGEM_OPORTUNIDADE = "siXFVMaQlScufBca8AVf";
 
 function ghlHeaders(token: string) {
   return {
@@ -70,6 +71,7 @@ async function createOpportunity(
         name: empresa ? `${nome} — ${empresa}` : nome,
         status: "open",
         source: OPPORTUNITY_SOURCE,
+        customFields: [{ id: CF_ORIGEM_OPORTUNIDADE, field_value: "SITE" }],
       }),
     });
 
