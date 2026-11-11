@@ -1,46 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Clapperboard } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { SectionHead } from "@/components/ui/section-head";
 import { useReveal } from "@/hooks/use-reveal";
 
-declare global {
-  interface Window {
-    instgrm?: { Embeds: { process: () => void } };
-  }
-}
+const POSTS = ["DbeE73yR9AQ", "DOZu3NXDvze"];
 
-const POSTS = ["https://www.instagram.com/p/DOZu3NXDvze/"];
+// The Instagram embed is a fixed 54px header followed by a 4:5 media block,
+// then likes/caption. We clip the iframe to the media block only.
+const IG_HEADER = 54;
 
 export function Instagram() {
   const revealRef = useReveal<HTMLElement>();
-  const sentinel = useRef<HTMLDivElement>(null);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    const el = sentinel.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        io.disconnect();
-        setLoaded(true);
-        if (window.instgrm) {
-          window.instgrm.Embeds.process();
-          return;
-        }
-        const s = document.createElement("script");
-        s.src = "https://www.instagram.com/embed.js";
-        s.async = true;
-        s.onload = () => window.instgrm?.Embeds.process();
-        document.body.appendChild(s);
-      },
-      { rootMargin: "300px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
 
   return (
     <section ref={revealRef} className="relative py-24 lg:py-32">
@@ -55,38 +26,29 @@ export function Instagram() {
         }
       />
 
-      <div ref={sentinel} className="wrap mt-14 flex flex-col items-center">
-        <div className="reveal relative w-full max-w-[420px] overflow-hidden rounded-[var(--radius-vx)] border border-white/8 bg-ink-900/60 p-3">
+      <div className="wrap mt-14 flex flex-col items-center">
+        <div className="relative grid w-full max-w-[860px] gap-6 sm:grid-cols-2">
           <div className="pointer-events-none absolute -top-14 left-1/2 size-48 -translate-x-1/2 rounded-full bg-orange-vx-500/22 blur-3xl" />
-          {loaded ? (
-            POSTS.map((url) => (
-              <blockquote
-                key={url}
-                className="instagram-media relative w-full"
-                data-instgrm-permalink={url}
-                data-instgrm-version="14"
-                data-instgrm-captioned=""
-                style={{
-                  background: "#fff",
-                  border: 0,
-                  borderRadius: 14,
-                  boxShadow: "none",
-                  margin: 0,
-                  padding: 0,
-                  width: "100%",
-                  minWidth: 300,
-                }}
+          {POSTS.map((id) => (
+            <div
+              key={id}
+              className="reveal relative mx-auto aspect-[400/495] w-full max-w-[420px] overflow-hidden rounded-[var(--radius-vx)] bg-ink-850/70"
+            >
+              <iframe
+                src={`https://www.instagram.com/p/${id}/embed/`}
+                title="Vídeo da VX no Instagram"
+                loading="lazy"
+                scrolling="no"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                className="absolute left-0 h-[calc(100%+454px)] w-full border-0"
+                style={{ top: -(IG_HEADER + 2) }}
               />
-            ))
-          ) : (
-            <div className="grid h-[520px] place-items-center rounded-xl bg-ink-850/70 text-mist-600">
-              <Clapperboard className="size-8 animate-pulse" />
             </div>
-          )}
+          ))}
         </div>
 
         <a
-          href={POSTS[0]}
+          href={`https://www.instagram.com/p/${POSTS[0]}/`}
           target="_blank"
           rel="noopener noreferrer"
           className="reveal mt-6 inline-flex items-center gap-2 font-display text-[14px] font-semibold text-orange-vx-400 transition-colors hover:text-orange-vx-400"
