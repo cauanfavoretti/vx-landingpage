@@ -42,7 +42,7 @@
   --shadow-glow-blue: 0 18px 60px -22px rgba(27, 111, 245, 0.75);
   --shadow-glow-orange: 0 18px 60px -22px rgba(255, 107, 26, 0.7);
 
-  --animate-marquee: marquee 42s linear infinite;
+  --animate-marquee: marquee 60s linear infinite;
   --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
   --animate-float-slow: float-slow 9s ease-in-out infinite;
   --animate-shimmer: shimmer 3.2s linear infinite;

@@ -4,12 +4,20 @@ import Image from "next/image";
 import { useReveal } from "@/hooks/use-reveal";
 import { Badge } from "@/components/ui/badge";
 
-const LOGOS = [
-  { src: "/uploads/pasted-1777072466716-0.png", alt: "PneuForte" },
-  { src: "/uploads/pasted-1777072420243-0.png", alt: "Nathália Matos — Dermatologia" },
-  { src: "/uploads/pasted-1777072483877-0.png", alt: "Doctor Saúde" },
-  { src: "/uploads/pasted-1777072476436-0.png", alt: "Grupo Médico Santa Clara" },
-  { src: "/uploads/pasted-1777072454736-0.png", alt: "Yenly Gonzalez — Otorrinolaringologia" },
+type Logo =
+  | { src: string; alt: string; width: number; height: number; box?: string }
+  | { name: string; sub: string; box?: string };
+
+const LOGOS: Logo[] = [
+  { src: "/uploads/clients/pierre-cunha.png", alt: "Pierre & Cunha — Advogados Associados", width: 378, height: 88, box: "w-[230px]" },
+  { src: "/uploads/clients/projecont.png", alt: "Grupo Projecont", width: 565, height: 250 },
+  { name: "Dr. Fábio Castello", sub: "Advogado", box: "w-[210px]" },
+  { src: "/uploads/clients/raissa-said.png", alt: "Dra. Raíssa Said — Otorrinolaringologista", width: 297, height: 150 },
+  { src: "/uploads/clients/cemed.png", alt: "CEMED Imagem — Centro Médico e Diagnóstico por Imagem", width: 557, height: 291 },
+  { src: "/uploads/clients/casa-resistencia.png", alt: "Casa da Resistência da Amazônia", width: 618, height: 549, box: "w-[110px]" },
+  { src: "/uploads/clients/ts-clinic.png", alt: "TS Clinic", width: 320, height: 271, box: "w-[110px]" },
+  { src: "/uploads/clients/nathalia-matos.png", alt: "Nathália Matos — Dermatologia", width: 842, height: 224, box: "w-[230px]" },
+  { src: "/uploads/clients/yenly-gonzalez.png", alt: "Yenly Gonzalez — Otorrinolaringologia", width: 364, height: 126 },
 ];
 
 export function Clients() {
@@ -37,16 +45,24 @@ export function Clients() {
         <div className="flex w-max animate-marquee items-center gap-16 group-hover:[animation-play-state:paused]">
           {loop.map((l, i) => (
             <div
-              key={`${l.alt}-${i}`}
-              className="grid h-16 w-[170px] shrink-0 place-items-center opacity-45 grayscale transition-all duration-400 hover:opacity-100 hover:grayscale-0"
+              key={`${"src" in l ? l.alt : l.name}-${i}`}
+              aria-hidden={i >= LOGOS.length || undefined}
+              className={`grid h-16 shrink-0 place-items-center opacity-45 grayscale transition-all duration-400 hover:opacity-100 hover:grayscale-0 ${l.box ?? "w-[170px]"}`}
             >
-              <Image
-                src={l.src}
-                alt={l.alt}
-                width={220}
-                height={80}
-                className="max-h-16 w-auto object-contain"
-              />
+              {"src" in l ? (
+                <Image
+                  src={l.src}
+                  alt={l.alt}
+                  width={l.width}
+                  height={l.height}
+                  className="max-h-16 w-auto max-w-full object-contain"
+                />
+              ) : (
+                <span className="flex flex-col items-center gap-1.5 whitespace-nowrap text-center text-white">
+                  <strong className="font-display text-[22px] leading-none font-semibold tracking-tight">{l.name}</strong>
+                  <small className="text-[10px] tracking-[0.32em] uppercase">{l.sub}</small>
+                </span>
+              )}
             </div>
           ))}
         </div>
