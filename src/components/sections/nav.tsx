@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
-import { Menu, X, CalendarCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -12,7 +11,6 @@ const LINKS = [
   { href: "#metodo", label: "Método" },
   { href: "#servicos", label: "Serviços" },
   { href: "#resultados", label: "Resultados" },
-  { href: "#contato", label: "Contato" },
 ];
 
 export function Nav() {
@@ -111,15 +109,6 @@ export function Nav() {
             ))}
           </nav>
 
-          <div className="hidden lg:block">
-            <Button asChild size="sm" className="pl-4">
-              <a href="#contato">
-                <CalendarCheck className="size-4" />
-                Agendar diagnóstico
-              </a>
-            </Button>
-          </div>
-
           <button
             onClick={() => setOpen((o) => !o)}
             aria-label="Abrir menu"
@@ -160,11 +149,6 @@ export function Nav() {
                   {l.label}
                 </motion.a>
               ))}
-              <Button asChild size="lg" className="mt-8 w-full">
-                <a href="#contato" onClick={() => setOpen(false)}>
-                  Agendar diagnóstico
-                </a>
-              </Button>
             </motion.div>
           </motion.div>
         )}

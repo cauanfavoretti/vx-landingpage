@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowRight, MousePointerClick } from "lucide-react";
+import { MousePointerClick } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const METRICS = [
@@ -119,12 +119,6 @@ export function Hero() {
             </p>
 
             <div className="hero-cta mt-9 flex flex-wrap items-center gap-3.5">
-              <Button asChild size="lg" className="group">
-                <a href="#contato">
-                  Agendar diagnóstico
-                  <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </a>
-              </Button>
               <Button asChild variant="ghost" size="lg">
                 <a href="#metodo">
                   <MousePointerClick className="size-4" />

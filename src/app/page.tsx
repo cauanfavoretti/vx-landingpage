@@ -8,10 +8,6 @@ import { Solution } from "@/components/sections/solution";
 import { Method } from "@/components/sections/method";
 import { Services } from "@/components/sections/services";
 import { Benefits } from "@/components/sections/benefits";
-import { Tech } from "@/components/sections/tech";
-import { Contact } from "@/components/sections/contact";
-import { Location } from "@/components/sections/location";
-import { FinalCta } from "@/components/sections/final-cta";
 import { Footer } from "@/components/sections/footer";
 
 export default function Home() {
@@ -28,10 +24,6 @@ export default function Home() {
         <Method />
         <Services />
         <Benefits />
-        <Tech />
-        <Contact />
-        <Location />
-        <FinalCta />
       </main>
       <Footer />
     </>

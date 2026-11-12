@@ -3,7 +3,6 @@ import Image from "next/image";
 const LINKS = [
   { href: "#", label: "Privacidade" },
   { href: "#", label: "Termos" },
-  { href: "#contato", label: "Contato" },
 ];
 
 export function Footer() {

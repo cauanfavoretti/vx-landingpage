@@ -1,6 +1,6 @@
 "use client";
 
-import { UserRound, Building2, GraduationCap, ArrowUpRight } from "lucide-react";
+import { UserRound, Building2, GraduationCap } from "lucide-react";
 import { SectionHead } from "@/components/ui/section-head";
 import { useReveal } from "@/hooks/use-reveal";
 import { cn } from "@/lib/utils";
@@ -98,18 +98,6 @@ export function Services() {
               {s.b}
             </div>
 
-            <a
-              href="#contato"
-              className={cn(
-                "mt-6 inline-flex items-center gap-2 font-display text-[14px] font-semibold transition-colors",
-                s.featured
-                  ? "text-orange-vx-400 hover:text-orange-vx-300"
-                  : "text-orange-vx-400 hover:text-orange-vx-400",
-              )}
-            >
-              Falar sobre esse formato
-              <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </a>
           </article>
         ))}
       </div>
