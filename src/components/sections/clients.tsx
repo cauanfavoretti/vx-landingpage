@@ -19,6 +19,7 @@ const LOGOS: Logo[] = [
   { src: "/uploads/clients/ts-clinic.png", alt: "TS Clinic", width: 320, height: 271, box: "w-[110px]" },
   { src: "/uploads/clients/nathalia-matos.png", alt: "Nathália Matos — Dermatologia", width: 842, height: 224, box: "w-[230px]" },
   { src: "/uploads/clients/yenly-gonzalez.png", alt: "Yenly Gonzalez — Otorrinolaringologia", width: 364, height: 126 },
+  { src: "/uploads/clients/erika-perini.png", alt: "Instituto Erika Perini", width: 464, height: 247 },
 ];
 
 export function Clients() {
